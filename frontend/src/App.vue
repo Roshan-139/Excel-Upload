@@ -8,14 +8,27 @@
       <div class="button-container">
         <button @click="uploadFile" :disabled="!file">Upload</button>
         <button @click="downloadShipmentsFile">Download Sample</button>
-        <!-- <button @click="viewPostgresData">View PostgreSQL Data</button>
-        <button @click="viewMongoData">View MongoDB Data</button> -->
+        <button @click="ViewData">View Data</button>
       </div>
       <p v-if="message">{{ message }}</p>
-      <div v-if="data">
+      <div v-if="data && data.length">
         <h2>Data from Database:</h2>
-        <pre>{{ data }}</pre>
+        <table>
+          <thead>
+            <tr>
+              <!-- Dynamically generate table headers based on keys of the first object -->
+              <th v-for="(value, key) in data[0]" :key="key">{{ key }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Iterate over data to generate table rows -->
+            <tr v-for="(item, index) in data" :key="index">
+              <td v-for="(value, key) in item" :key="key">{{ value }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+      <p v-else-if="data && data.length === 0">No data available.</p>
     </main>
   </div>
 </template>
@@ -28,7 +41,7 @@ export default {
     return {
       file: null,
       message: '',
-      data: null // New data property to store database contents
+      data: [] // Initialize as an empty array
     };
   },
   methods: {
@@ -68,26 +81,16 @@ export default {
       link.click();
       document.body.removeChild(link);
     },
-    // async viewPostgresData() {
-    //   try {
-    //     const response = await axios.get('http://localhost:3000/database/postgres');
-    //     this.data = response.data;
-    //     this.message = 'PostgreSQL data loaded successfully.';
-    //   } catch (error) {
-    //     this.message = `Error fetching PostgreSQL data: ${error.message}`;
-    //     console.error(error);
-    //   }
-    // },
-    // async viewMongoData() {
-    //   try {
-    //     const response = await axios.get('http://localhost:3000/database/mongodb');
-    //     this.data = response.data;
-    //     this.message = 'MongoDB data loaded successfully.';
-    //   } catch (error) {
-    //     this.message = `Error fetching MongoDB data: ${error.message}`;
-    //     console.error(error);
-    //   }
-    // }
+    async ViewData() {
+      try {
+        const response = await axios.get('http://localhost:3000/database/postgres');
+        this.data = response.data; // Assume data is an array of objects
+        this.message = 'Data loaded successfully.';
+      } catch (error) {
+        this.message = `Error fetching data: ${error.message}`;
+        console.error(error);
+      }
+    }
   }
 };
 </script>
@@ -143,11 +146,28 @@ button:hover:not(:disabled) {
   background-color: #0056b3; /* Darker blue background on hover */
 }
 
-pre {
-  background-color: #f8f9fa; /* Light gray background for preformatted text */
-  padding: 10px;
+table {
+  width: 100%;
+  border-collapse: collapse; /* Ensure borders are merged */
+  margin-top: 20px; /* Add some space above the table */
+}
+
+th, td {
+  padding: 8px 12px; /* Add padding inside cells */
   border: 1px solid #ddd; /* Light gray border */
-  border-radius: 4px; /* Round the corners */
-  overflow-x: auto; /* Horizontal scroll if content is too wide */
+  text-align: left; /* Align text to the left */
+}
+
+th {
+  background-color: #f2f2f2; /* Light gray background for headers */
+  font-weight: bold; /* Bold text for headers */
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9; /* Alternating row colors */
+}
+
+tr:hover {
+  background-color: #f1f1f1; /* Highlight row on hover */
 }
 </style>

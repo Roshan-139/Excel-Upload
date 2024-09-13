@@ -4,10 +4,18 @@ const multer = require('multer');
 const path = require('path');
 const excelRoutes = require('./routes/excelroutes');
 const app = express();
+const { Pool } = require('pg');
 
+//const shipment=require('./migration/models/psql/shipmentpsql');
 // Enable CORS
 app.use(cors());
-
+const pool = new Pool({
+    user: 'roshan139',
+    host: '127.0.0.1',
+    database: 'mydatabase',
+    password: 'roshan123456',
+    port: 5432,
+  });
 // Middleware to handle multipart/form-data
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -36,6 +44,15 @@ app.get('/files/samplefile.xlsx', (req, res) => {
     });
   });
 
+  app.get('/database/postgres', async (req, res) => {
+    try {
+      const result = await pool.query('SELECT * FROM public."Shipments"'); // Replace with your SQL query
+      res.json(result.rows);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Failed to fetch data' });
+    }
+  });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
